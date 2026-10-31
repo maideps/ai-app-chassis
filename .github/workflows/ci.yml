@@ -16,8 +16,15 @@ jobs:
         with:
           node-version-file: .nvmrc
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Install and set up project
         run: npm run setup --if-present
+
+      - name: Install the Python packages (core and template, editable, with dev tools)
+        run: npm run setup:python
 
       - name: Verify project
         run: npm run check
