@@ -1,0 +1,213 @@
+{
+  "features": [
+    {
+      "id": "feat-001",
+      "name": "Core library",
+      "behavior": "core/ ships the ai_app_chassis package: provider port, deterministic fake provider, LiteLLM adapter (optional extra), LLMClient with per-step routing, validated structured output with one retry and a call ledger, versioned prompt store, input guardrails and PII redaction, and a golden-set eval runner whose JSON report a quality gate can read.",
+      "verification": "pytest covers every module except the LiteLLM adapter; mypy strict and ruff pass; arch-101 keeps the core free of app, web framework and SDK imports.",
+      "dependencies": [],
+      "layers": [
+        {
+          "label": "Layer 1: Static checks",
+          "cmd": "npm run lint",
+          "repair": "Fix ruff/format or harness lint errors and rerun the layer command."
+        },
+        {
+          "label": "Layer 1b: Type checks",
+          "cmd": "npm run typecheck",
+          "repair": "Fix mypy errors in core/src or template/backend/src and rerun."
+        },
+        {
+          "label": "Layer 2: Runtime tests",
+          "cmd": "npm run test",
+          "repair": "Fix failing pytest or harness tests and rerun the layer command."
+        },
+        {
+          "label": "Layer 3: System confirmation",
+          "cmd": "npm run check",
+          "repair": "Resolve remaining issues and rerun full verification."
+        }
+      ]
+    },
+    {
+      "id": "feat-002",
+      "name": "Example app template",
+      "behavior": "template/backend is a FastAPI service built only on the core public API: POST /summarize (guardrails, PII redaction, versioned prompt, structured output), GET /usage (ledger summary) and GET /health; it runs on the fake model by default and on any LiteLLM model through APP_MODEL, and ships a five-case golden set with a keyword-recall eval.",
+      "verification": "API tests cover success, PII redaction, guardrail 422s and the invalid-model 502; the eval writes a report the eval-summarize gate reads; coverage and eval gates pass.",
+      "dependencies": [
+        "feat-001"
+      ],
+      "layers": [
+        {
+          "label": "Layer 1: Static checks",
+          "cmd": "npm run lint",
+          "repair": "Fix ruff/format or harness lint errors and rerun the layer command."
+        },
+        {
+          "label": "Layer 1b: Type checks",
+          "cmd": "npm run typecheck",
+          "repair": "Fix mypy errors in core/src or template/backend/src and rerun."
+        },
+        {
+          "label": "Layer 2: Runtime tests",
+          "cmd": "npm run test",
+          "repair": "Fix failing pytest or harness tests and rerun the layer command."
+        },
+        {
+          "label": "Layer 3: System confirmation",
+          "cmd": "npm run check",
+          "repair": "Resolve remaining issues and rerun full verification."
+        },
+        {
+          "label": "Layer 4: Quality gates",
+          "cmd": "npm run quality",
+          "repair": "Raise coverage or the eval score back above the floor in .harness/quality.json, or record why a floor changed in DECISIONS.md."
+        }
+      ]
+    },
+    {
+      "id": "feat-003",
+      "name": "create-app generator",
+      "behavior": "A command copies template/backend into a new directory with the package renamed, its own prompts, golden set and quality gates, and the harness adopted.",
+      "verification": "TODO: a generated app passes its own npm run check.",
+      "dependencies": [
+        "feat-002"
+      ],
+      "layers": [
+        {
+          "label": "Layer 1: Static checks",
+          "cmd": "npm run lint",
+          "repair": "Fix ruff/format or harness lint errors and rerun the layer command."
+        },
+        {
+          "label": "Layer 1b: Type checks",
+          "cmd": "npm run typecheck",
+          "repair": "Fix mypy errors in core/src or template/backend/src and rerun."
+        },
+        {
+          "label": "Layer 2: Runtime tests",
+          "cmd": "npm run test",
+          "repair": "Fix failing pytest or harness tests and rerun the layer command."
+        },
+        {
+          "label": "Layer 3: System confirmation",
+          "cmd": "npm run check",
+          "repair": "Resolve remaining issues and rerun full verification."
+        },
+        {
+          "label": "Layer 4: Quality gates",
+          "cmd": "npm run quality",
+          "repair": "Raise coverage or the eval score back above the floor in .harness/quality.json, or record why a floor changed in DECISIONS.md."
+        }
+      ]
+    },
+    {
+      "id": "feat-004",
+      "name": "Frontend in the template",
+      "behavior": "The template gains a small React + Vite frontend for the summarize use case, with its own lint, typecheck, test and build wired into the layers.",
+      "verification": "TODO: frontend tests and build run in npm run check.",
+      "dependencies": [
+        "feat-002"
+      ],
+      "layers": [
+        {
+          "label": "Layer 1: Static checks",
+          "cmd": "npm run lint",
+          "repair": "Fix ruff/format or harness lint errors and rerun the layer command."
+        },
+        {
+          "label": "Layer 1b: Type checks",
+          "cmd": "npm run typecheck",
+          "repair": "Fix mypy errors in core/src or template/backend/src and rerun."
+        },
+        {
+          "label": "Layer 2: Runtime tests",
+          "cmd": "npm run test",
+          "repair": "Fix failing pytest or harness tests and rerun the layer command."
+        },
+        {
+          "label": "Layer 3: System confirmation",
+          "cmd": "npm run check",
+          "repair": "Resolve remaining issues and rerun full verification."
+        },
+        {
+          "label": "Layer 4: Quality gates",
+          "cmd": "npm run quality",
+          "repair": "Raise coverage or the eval score back above the floor in .harness/quality.json, or record why a floor changed in DECISIONS.md."
+        }
+      ]
+    },
+    {
+      "id": "feat-005",
+      "name": "Optional RAG module",
+      "behavior": "core gains an optional retrieval module (embeddings port, chunking, a vector store port with an in-memory implementation) and a retrieval eval metric.",
+      "verification": "TODO: retrieval tests and a recall@k eval gate.",
+      "dependencies": [
+        "feat-001"
+      ],
+      "layers": [
+        {
+          "label": "Layer 1: Static checks",
+          "cmd": "npm run lint",
+          "repair": "Fix ruff/format or harness lint errors and rerun the layer command."
+        },
+        {
+          "label": "Layer 1b: Type checks",
+          "cmd": "npm run typecheck",
+          "repair": "Fix mypy errors in core/src or template/backend/src and rerun."
+        },
+        {
+          "label": "Layer 2: Runtime tests",
+          "cmd": "npm run test",
+          "repair": "Fix failing pytest or harness tests and rerun the layer command."
+        },
+        {
+          "label": "Layer 3: System confirmation",
+          "cmd": "npm run check",
+          "repair": "Resolve remaining issues and rerun full verification."
+        },
+        {
+          "label": "Layer 4: Quality gates",
+          "cmd": "npm run quality",
+          "repair": "Raise coverage or the eval score back above the floor in .harness/quality.json, or record why a floor changed in DECISIONS.md."
+        }
+      ]
+    },
+    {
+      "id": "feat-006",
+      "name": "Real-model eval baseline",
+      "behavior": "The summarize eval runs against at least one real model through LiteLLM, and the README reports that score next to the fake-model score.",
+      "verification": "TODO: a committed eval report from a real model; needs an API key.",
+      "dependencies": [
+        "feat-002"
+      ],
+      "layers": [
+        {
+          "label": "Layer 1: Static checks",
+          "cmd": "npm run lint",
+          "repair": "Fix ruff/format or harness lint errors and rerun the layer command."
+        },
+        {
+          "label": "Layer 1b: Type checks",
+          "cmd": "npm run typecheck",
+          "repair": "Fix mypy errors in core/src or template/backend/src and rerun."
+        },
+        {
+          "label": "Layer 2: Runtime tests",
+          "cmd": "npm run test",
+          "repair": "Fix failing pytest or harness tests and rerun the layer command."
+        },
+        {
+          "label": "Layer 3: System confirmation",
+          "cmd": "npm run check",
+          "repair": "Resolve remaining issues and rerun full verification."
+        },
+        {
+          "label": "Layer 4: Quality gates",
+          "cmd": "npm run quality",
+          "repair": "Raise coverage or the eval score back above the floor in .harness/quality.json, or record why a floor changed in DECISIONS.md."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "$comment": "Coverage of the core library and the template app, and the template's golden-set eval score. Both run on the deterministic fake model, so they need no key.",
+  "enabled": true,
+  "gates": [
+    {
+      "name": "coverage",
+      "cmd": "node tools/py.mjs -m pytest -q -p no:cacheprovider core/tests template/backend/tests --cov=ai_app_chassis --cov=app --cov-report=term --cov-report=json:.harness/quality/coverage.json",
+      "metric": { "file": ".harness/quality/coverage.json", "path": "totals.percent_covered" },
+      "min": 90
+    },
+    {
+      "name": "eval-summarize",
+      "cmd": "node tools/py.mjs -m app.evals",
+      "metric": { "file": "template/backend/evals/results/summarize.json", "path": "score" },
+      "min": 0.8
+    }
+  ]
+}
