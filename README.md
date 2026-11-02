@@ -2,7 +2,7 @@
 
 The chassis I build LLM-backed apps on: a small Python core library for the parts every AI app repeats, and an app template that already uses it, with tests, guardrails and an eval gate from the first commit.
 
-> **Portfolio project.** This is a skeleton extracted from my own apps ([ai-issue-triage](../ai-issue-triage/), ai-invoice-intake), not a published framework. It runs end to end on a deterministic fake model; real-model runs need a LiteLLM model name and its key.
+> **Portfolio project.** This is a skeleton extracted from my own apps (ai-issue-triage and ai-invoice-intake), not a published framework. It runs end to end on a deterministic fake model; real-model runs need a LiteLLM model name and its key.
 
 See the [Harness Command Reference](docs/HARNESS.md) for every make target and npm script.
 
