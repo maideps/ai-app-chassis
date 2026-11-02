@@ -19,4 +19,5 @@ After adding or updating a session note, regenerate this file with `node scripts
 ## Session Index
 
 - [Session 001 — 2026-10-30 — Skeleton: core library and app template](progress/001-2026-10-30.md)
+- [Session 002 — 2026-11-02 — Harness upgrade to ai-harness-framework 3a500dd](progress/002-2026-11-02.md)
 <!-- END GENERATED PROGRESS -->
