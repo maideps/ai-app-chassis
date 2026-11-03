@@ -1,0 +1,18 @@
+{
+  "features": [
+    {
+      "id": "feat-001",
+      "name": "Example use case from the chassis",
+      "behavior": "backend/ runs the ai-app-chassis example: POST /summarize with guardrails, PII redaction, a versioned prompt and structured output, GET /usage and GET /health, on the fake model by default.",
+      "verification": "npm run check passes, including the coverage and eval-summarize quality gates.",
+      "dependencies": [],
+      "layers": [
+        { "label": "Layer 1: Static checks", "cmd": "npm run lint", "repair": "Fix ruff/format or harness lint errors and rerun the layer command." },
+        { "label": "Layer 1b: Type checks", "cmd": "npm run typecheck", "repair": "Fix mypy errors in backend/src and rerun." },
+        { "label": "Layer 2: Runtime tests", "cmd": "npm run test", "repair": "Fix failing tests and rerun the layer command." },
+        { "label": "Layer 3: System confirmation", "cmd": "npm run check", "repair": "Resolve remaining issues and rerun full verification." },
+        { "label": "Layer 4: Quality gates", "cmd": "npm run quality", "repair": "Raise coverage or the eval score back above the floor in .harness/quality.json." }
+      ]
+    }
+  ]
+}

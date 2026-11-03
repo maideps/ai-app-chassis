@@ -39,6 +39,7 @@
 | `make dev` | `npm run dev` |
 | `make help` | `npm run help` |
 | — | `npm run eval` |
+| — | `npm run create-app` |
 | — | `npm run harness-docs` |
 | — | `npm run setup:python` |
 | — | `npm run prepublishOnly` |

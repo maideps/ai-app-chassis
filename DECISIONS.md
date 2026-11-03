@@ -61,3 +61,21 @@ This file records significant architectural decisions, their context, alternativ
 **Consequences:**
 - Positive: `npm run check` fails when coverage or the eval score drops.
 - Negative: the eval floor only means something with a real model; on the fake it proves the pipeline, not quality (stated in the README).
+
+### D-004: create-app generates an app around a renamed copy of the template, with the core pinned by commit
+
+**Date:** 2026-11-03
+**Status:** accepted
+**Context:** D-001 said a new app starts by copying `template/backend/`. By hand that means renaming the package, writing a launcher, wiring npm scripts, quality gates, CI and the dev container for Python, and adopting the harness. Each step is easy to get wrong, and the result is only known to work once the new app passes its own `npm run check`.
+**Decision:**
+- `tools/create-app.mjs` (`npm run create-app -- <dir>`) runs this repository's copy of `create-harness` (devcontainer and mcp unless `--plain`), copies `template/backend/` to `backend/` without caches, renames the `app` package and the `chassis-app` identity, and renders `template/scaffold/` (`{{name}}`, `{{package}}`) for the root files the harness would otherwise leave as placeholders.
+- The core dependency is a pip direct reference to this repository at the current commit (`git+...@<sha>#subdirectory=core`), so an app keeps building the same core until it bumps the pin; `--core-path` uses a local `core/` (the tests use it).
+- Project-specific architecture rules in this repository use ids `arch-1NN`; the harness's use `arch-0NN`. `create-app` keeps only the harness's, because the chassis rules check files a new app does not have.
+- A slow end-to-end check (`tools/tests/create-app.e2e.mjs`, in `npm run e2e`) installs a generated app and runs its own `npm run check` and `check-arch`.
+**Alternatives considered:**
+- A cookiecutter/copier template — rejected: another tool to install, and the harness adoption step is Node anyway.
+- Depend on `ai-app-chassis` from PyPI — rejected until the core is published.
+- Pin the core to `main` — rejected: every app would silently pick up core changes.
+**Consequences:**
+- Positive: a new app is one command away and is verified the same way as this repository.
+- Negative: generating from an unpushed commit gives an app whose pin cannot be installed yet (create-app warns); the e2e check needs network for PyPI and adds about two minutes to `npm run check`.

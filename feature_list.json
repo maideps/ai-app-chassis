@@ -68,8 +68,8 @@
     {
       "id": "feat-003",
       "name": "create-app generator",
-      "behavior": "A command copies template/backend into a new directory with the package renamed, its own prompts, golden set and quality gates, and the harness adopted.",
-      "verification": "TODO: a generated app passes its own npm run check.",
+      "behavior": "npm run create-app -- <dir> [--name <kebab-name>] generates a new app: the harness adopted (devcontainer and mcp components), template/backend copied to backend/ with the package renamed after the project, root files from template/scaffold/, npm scripts, quality gates, CI and dev container wired for Python, and the core pinned to this repository at the current commit (or a local core with --core-path).",
+      "verification": "tools/tests/create-app.test.mjs checks the generated tree (renamed package, filled placeholders, scripts, productRoots, harness-only arch rules, CI and dev container) and that the harness lint and manifest pass on it; tools/tests/create-app.e2e.mjs (in npm run e2e) installs a generated app and runs its own npm run check and check-arch.",
       "dependencies": [
         "feat-002"
       ],
