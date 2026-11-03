@@ -1,5 +1,7 @@
 # ai-app-chassis
 
+[![ci](https://github.com/maideps/ai-app-chassis/actions/workflows/ci.yml/badge.svg)](https://github.com/maideps/ai-app-chassis/actions/workflows/ci.yml)
+
 The chassis I build LLM-backed apps on: a small Python core library for the parts every AI app repeats, and an app template that already uses it, with tests, guardrails and an eval gate from the first commit.
 
 > **Portfolio project.** This is a skeleton extracted from my own apps (ai-issue-triage and ai-invoice-intake), not a published framework. It runs end to end on a deterministic fake model; real-model runs need a LiteLLM model name and its key.
@@ -61,6 +63,10 @@ A `create-app` command that does this, a frontend in the template and an optiona
 ## Stack
 
 Python 3.11+, Pydantic 2, FastAPI, LiteLLM (optional), pytest, ruff, mypy (strict). Built and verified with [ai-harness-framework](https://github.com/maideps/ai-harness-framework): feature list, verification layers, quality gates, a dev container with Claude Code, Codex and Gemini CLI, and the context7 MCP server.
+
+## Repository layout
+
+The product is in `core/` (the `ai_app_chassis` library and its tests) and `template/` (the FastAPI app template). Note the singular: `template/` is the app template, while `templates/` belongs to the harness. The rest of the root is the process record from [ai-harness-framework](https://github.com/maideps/ai-harness-framework), the workflow this project is built with. `AGENTS.md` is the workflow every agent follows, and `CLAUDE.md`, `GEMINI.md` and `codex.md` point each agent to it. `scripts/`, `tools/`, `templates/`, `skills/` and the `.mjs` tests in `tests/` are the harness itself. `feature_list.json`, `PROGRESS.md`, `progress/`, `session-handoff.md` and `DECISIONS.md` record what was built, in what order and why.
 
 ## License
 
