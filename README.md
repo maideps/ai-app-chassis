@@ -54,11 +54,16 @@ The eval score is 1.0 because the fake summarizer is deterministic and the golde
 
 ## Starting a new app from the template
 
-1. Copy `template/backend/` into the new repository and rename the `app` package.
-2. Replace `summarize.py` with your use case: a Pydantic output model, a prompt folder, a fake handler.
-3. Write golden cases in `evals/golden/` and point the eval gate at the new report.
+```bash
+npm run create-app -- ../ai-new-app                   # or: node tools/create-app.mjs <dir> --name <kebab-name>
+cd ../ai-new-app && npm run setup:python && npm run check
+```
 
-A `create-app` command that does this, a frontend in the template and an optional RAG module are planned (see `feature_list.json`).
+`create-app` adopts the harness into the new directory (with the dev container and the context7 MCP server; `--plain` skips both), copies `template/backend/` to `backend/` with the `app` package renamed after the project (`ai_new_app`), and writes the root files from `template/scaffold/`: README, product and quality docs, a feature list, the Python launcher and the quality gates. The npm scripts, the CI workflow and the dev container are wired for Python. The new app installs the core from this repository on GitHub, pinned to the current commit, so push before generating; `--core-path <dir>` points at a local `core/` instead.
+
+Then replace the example: a Pydantic output model, a prompt folder and a fake handler for the real use case, and golden cases for its eval gate.
+
+A frontend in the template and an optional RAG module are planned (see `feature_list.json`).
 
 ## Stack
 

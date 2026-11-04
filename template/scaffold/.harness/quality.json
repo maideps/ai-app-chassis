@@ -1,0 +1,18 @@
+{
+  "$comment": "Coverage of the {{package}} package and the golden-set eval score of the example use case. Both run on the deterministic fake model; rerun the eval with a real APP_MODEL before trusting the score.",
+  "enabled": true,
+  "gates": [
+    {
+      "name": "coverage",
+      "cmd": "node tools/py.mjs -m pytest -q -p no:cacheprovider backend/tests --cov={{package}} --cov-report=term --cov-report=json:.harness/quality/coverage.json",
+      "metric": { "file": ".harness/quality/coverage.json", "path": "totals.percent_covered" },
+      "min": 80
+    },
+    {
+      "name": "eval-summarize",
+      "cmd": "node tools/py.mjs -m {{package}}.evals",
+      "metric": { "file": "backend/evals/results/summarize.json", "path": "score" },
+      "min": 0.8
+    }
+  ]
+}
