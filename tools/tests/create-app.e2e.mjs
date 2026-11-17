@@ -36,6 +36,7 @@ try {
   createApp(target, { corePath: path.join(CHASSIS_ROOT, "core"), git: true });
   console.log(`  [PASS] generated ${target}`);
   step("npm run setup:python", "npm", ["run", "setup:python"]);
+  step("npm run setup:frontend", "npm", ["run", "setup:frontend"]);
   if (!failed) {
     step("git add -A", "git", ["add", "-A"]);
     const check = step("npm run check in the generated app", "npm", ["run", "check"]);

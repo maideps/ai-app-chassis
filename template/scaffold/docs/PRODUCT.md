@@ -8,5 +8,5 @@
 
 ## Key User Flows
 
-- Summarize a text through `POST /summarize` (example use case).
+- Summarize a text in the web UI, or through `POST /summarize` (example use case).
 - Check token, cost and latency totals through `GET /usage`.

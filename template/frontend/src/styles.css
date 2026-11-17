@@ -1,0 +1,64 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #1f2328;
+  background: #f6f8fa;
+}
+
+main {
+  max-width: 44rem;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.model {
+  color: #57606a;
+  font-size: 0.9rem;
+}
+
+form {
+  display: grid;
+  gap: 0.5rem;
+}
+
+textarea {
+  font: inherit;
+  padding: 0.5rem;
+}
+
+button {
+  justify-self: start;
+  padding: 0.5rem 1rem;
+}
+
+.error {
+  color: #cf222e;
+}
+
+.keywords {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.keywords li {
+  padding: 0.1rem 0.6rem;
+  border-radius: 1rem;
+  background: #ddf4ff;
+}
+
+.usage dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 1rem;
+}
+
+.usage dd {
+  margin: 0;
+}

@@ -28,3 +28,7 @@ template/backend/evals/results/
 
 # Built when an app installs the core from a local path (create-app --core-path)
 core/build/
+
+# Frontend build output
+template/frontend/dist/
+*.tsbuildinfo

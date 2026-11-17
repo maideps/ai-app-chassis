@@ -26,6 +26,9 @@ jobs:
       - name: Install the Python packages (core and template, editable, with dev tools)
         run: npm run setup:python
 
+      - name: Install the frontend template's dependencies
+        run: npm run setup:frontend
+
       - name: Verify project
         run: npm run check
 

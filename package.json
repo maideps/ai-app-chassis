@@ -22,9 +22,9 @@
   "scripts": {
     "check": "npm run lint && npm run typecheck && npm run test && npm run build && npm run e2e && npm run verify-all && npm run quality",
     "lint": "node scripts/framework-check.mjs lint && node tools/py.mjs -m ruff check core template/backend && node tools/py.mjs -m ruff format --check core template/backend",
-    "typecheck": "node scripts/framework-check.mjs typecheck && node tools/py.mjs -m mypy --config-file core/pyproject.toml core/src && node tools/py.mjs -m mypy --config-file template/backend/pyproject.toml template/backend/src",
-    "test": "node scripts/framework-check.mjs test && node tools/py.mjs -m pytest -q -p no:cacheprovider core/tests template/backend/tests && node --test tools/tests/create-app.test.mjs",
-    "build": "node scripts/framework-check.mjs build && node tools/py.mjs -m compileall -q core/src template/backend/src",
+    "typecheck": "node scripts/framework-check.mjs typecheck && node tools/py.mjs -m mypy --config-file core/pyproject.toml core/src && node tools/py.mjs -m mypy --config-file template/backend/pyproject.toml template/backend/src && npm --prefix template/frontend run typecheck",
+    "test": "node scripts/framework-check.mjs test && node tools/py.mjs -m pytest -q -p no:cacheprovider core/tests template/backend/tests && npm --prefix template/frontend run test && node --test tools/tests/create-app.test.mjs",
+    "build": "node scripts/framework-check.mjs build && node tools/py.mjs -m compileall -q core/src template/backend/src && npm --prefix template/frontend run build",
     "e2e": "node scripts/framework-check.mjs e2e && node tools/tests/create-app.e2e.mjs",
     "dev": "node scripts/framework-check.mjs dev",
     "check-arch": "node scripts/framework-check.mjs check-arch",
@@ -57,6 +57,7 @@
     "sweep": "node scripts/harness-sweep.mjs",
     "setup": "node scripts/framework-check.mjs setup",
     "setup:python": "node tools/py.mjs setup",
+    "setup:frontend": "npm --prefix template/frontend ci --no-audit --no-fund",
     "help": "node scripts/framework-check.mjs help",
     "prepublishOnly": "npm run check && npm run check-arch"
   },

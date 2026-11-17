@@ -5,7 +5,8 @@
 //
 // 1. Adopts the harness into <target-dir> with this repository's own copy of it, plus the
 //    devcontainer and mcp components (--plain skips both).
-// 2. Copies template/backend/ to backend/ and renames the `app` package after the project.
+// 2. Copies template/backend/ to backend/ and renames the `app` package after the project, and
+//    copies template/frontend/ to frontend/ (feat-004).
 // 3. Writes the root files from template/scaffold/ ({{name}}, {{package}} filled in) and wires
 //    the npm scripts, the quality gates, the CI workflow and the dev container for Python.
 // The new app depends on the core through a pip direct reference: this repository on GitHub at
@@ -28,7 +29,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 export const CHASSIS_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const REPOSITORY = "https://github.com/maideps/ai-app-chassis.git";
-const SKIPPED = new Set(["__pycache__", ".mypy_cache", ".ruff_cache", ".pytest_cache", "results"]);
+const SKIPPED = new Set(["__pycache__", ".mypy_cache", ".ruff_cache", ".pytest_cache", "results", "node_modules", "dist"]);
 const PY_KEYWORDS = new Set(["and", "as", "class", "def", "del", "for", "from", "global", "import", "in", "is", "lambda", "not", "or", "pass", "return", "try", "while", "with", "yield"]);
 
 export function packageName(name) {
@@ -59,7 +60,7 @@ export function coreRequirement({ corePath } = {}) {
 function copyTree(src, dest) {
   mkdirSync(dest, { recursive: true });
   for (const entry of readdirSync(src, { withFileTypes: true })) {
-    if (SKIPPED.has(entry.name) || entry.name.endsWith(".egg-info")) continue;
+    if (SKIPPED.has(entry.name) || entry.name.endsWith(".egg-info") || entry.name.endsWith(".tsbuildinfo")) continue;
     const from = path.join(src, entry.name);
     const to = path.join(dest, entry.name);
     if (entry.isDirectory()) copyTree(from, to);
@@ -110,6 +111,19 @@ function renameBackend(backend, { name, pkg, core }) {
   );
 }
 
+// The frontend keeps its code; only its package identity and the backend path it cites change.
+function renameFrontend(frontend, { name, pkg }) {
+  const ui = `${name}-ui`;
+  edit(path.join(frontend, "package.json"), (text) =>
+    replaceOnce(text, '"name": "chassis-app-ui"', `"name": "${ui}"`, "frontend/package.json"),
+  );
+  edit(path.join(frontend, "package-lock.json"), (text) => text.replace(/"name": "chassis-app-ui"/g, `"name": "${ui}"`));
+  edit(path.join(frontend, "index.html"), (text) =>
+    replaceOnce(text, "<title>chassis-app</title>", `<title>${name}</title>`, "frontend/index.html"),
+  );
+  edit(path.join(frontend, "src", "api.ts"), (text) => text.replace("template/backend/src/app/main.py", `backend/src/${pkg}/main.py`));
+}
+
 function renderScaffold(target, vars) {
   const scaffold = path.join(CHASSIS_ROOT, "template", "scaffold");
   for (const file of filesUnder(scaffold, [""])) {
@@ -125,20 +139,24 @@ function wireScripts(target, pythonPackage) {
   const file = path.join(target, "package.json");
   const pkg = JSON.parse(readFileSync(file, "utf8"));
   const py = "node tools/py.mjs";
+  const fe = "npm --prefix frontend run";
   const scripts = {
     ...pkg.scripts,
     lint: `node scripts/framework-check.mjs lint && ${py} -m ruff check backend && ${py} -m ruff format --check backend`,
-    typecheck: `node scripts/framework-check.mjs typecheck && ${py} -m mypy --config-file backend/pyproject.toml backend/src`,
-    test: `node scripts/framework-check.mjs test && ${py} -m pytest -q -p no:cacheprovider backend/tests`,
-    build: `node scripts/framework-check.mjs build && ${py} -m compileall -q backend/src`,
+    typecheck: `node scripts/framework-check.mjs typecheck && ${py} -m mypy --config-file backend/pyproject.toml backend/src && ${fe} typecheck`,
+    test: `node scripts/framework-check.mjs test && ${py} -m pytest -q -p no:cacheprovider backend/tests && ${fe} test`,
+    build: `node scripts/framework-check.mjs build && ${py} -m compileall -q backend/src && ${fe} build`,
     e2e: "node scripts/framework-check.mjs e2e",
   };
-  // The chassis's own extra scripts (setup:python, eval) are rewritten for backend/.
+  // The chassis's own extra scripts are rewritten for backend/ and frontend/, or dropped.
   const ordered = {};
   for (const [key, value] of Object.entries(scripts)) {
-    if (key === "setup:python" || key === "eval") continue;
+    if (["setup:python", "setup:frontend", "eval", "create-app"].includes(key)) continue;
     ordered[key] = value;
-    if (key === "setup") ordered["setup:python"] = `${py} setup`;
+    if (key === "setup") {
+      ordered["setup:python"] = `${py} setup`;
+      ordered["setup:frontend"] = "npm --prefix frontend ci --no-audit --no-fund";
+    }
     if (key === "quality") ordered.eval = `${py} -m ${pythonPackage}.evals`;
   }
   pkg.scripts = ordered;
@@ -147,7 +165,7 @@ function wireScripts(target, pythonPackage) {
 
 function wireManifest(target) {
   const file = path.join(target, ".harness", "manifest.json");
-  edit(file, (text) => text.replace(/"productRoots": \[[^\]]*\]/, '"productRoots": [\n    "backend/",\n    "tools/"\n  ]'));
+  edit(file, (text) => text.replace(/"productRoots": \[[^\]]*\]/, '"productRoots": [\n    "backend/",\n    "frontend/",\n    "tools/"\n  ]'));
 }
 
 // .harness/arch-rules.json travels with the harness, so it also carries this chassis's own
@@ -169,7 +187,7 @@ function wireCi(target) {
     return replaceOnce(
       text,
       "      - name: Install and set up project\n        run: npm run setup --if-present\n",
-      `${setupPython}      - name: Install and set up project\n        run: npm run setup --if-present\n\n      - name: Install the Python backend with its dev tools\n        run: npm run setup:python\n`,
+      `${setupPython}      - name: Install and set up project\n        run: npm run setup --if-present\n\n      - name: Install the Python backend with its dev tools\n        run: npm run setup:python\n\n      - name: Install the frontend's dependencies\n        run: npm run setup:frontend\n`,
       file,
     );
   });
@@ -185,7 +203,7 @@ function wireDevcontainer(target, name) {
   edit(path.join(target, ".devcontainer", "post-create.sh"), (text) =>
     text.includes("tools/py.mjs setup")
       ? text
-      : replaceOnce(text, "\n./init.sh ", "\n# The Python layers run from .venv (backend/, editable).\nnode tools/py.mjs setup\n\n./init.sh ", "post-create.sh"),
+      : replaceOnce(text, "\n./init.sh ", "\n# The Python layers run from .venv (backend/, editable); the frontend from node_modules.\nnode tools/py.mjs setup\nnpm run setup:frontend\n\n./init.sh ", "post-create.sh"),
   );
 }
 
@@ -201,6 +219,10 @@ __pycache__/
 
 # Eval reports are regenerated by the quality gate
 backend/evals/results/
+
+# Frontend build output
+frontend/dist/
+*.tsbuildinfo
 `;
 
 function runIn(target, script, args = []) {
@@ -223,6 +245,8 @@ export function createApp(targetDir, { name, corePath, plain = false, git = fals
 
   copyTree(path.join(CHASSIS_ROOT, "template", "backend"), path.join(target, "backend"));
   renameBackend(path.join(target, "backend"), { name: appName, pkg, core });
+  copyTree(path.join(CHASSIS_ROOT, "template", "frontend"), path.join(target, "frontend"));
+  renameFrontend(path.join(target, "frontend"), { name: appName, pkg });
   renderScaffold(target, { name: appName, package: pkg });
   wireScripts(target, pkg);
   wireManifest(target);

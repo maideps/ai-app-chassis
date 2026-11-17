@@ -72,20 +72,38 @@ test("createApp renames the template package and wires the project around it", (
     const scripts = JSON.parse(read(target, "package.json")).scripts;
     assert.equal(scripts["setup:python"], "node tools/py.mjs setup");
     assert.equal(scripts.eval, "node tools/py.mjs -m ai_demo_notes.evals");
-    assert.match(scripts.test, /pytest -q -p no:cacheprovider backend\/tests$/);
+    assert.match(scripts.test, /pytest -q -p no:cacheprovider backend\/tests && /);
     assert.doesNotMatch(Object.values(scripts).join("\n"), /core\/|template\//);
-    assert.deepEqual(JSON.parse(read(target, ".harness/manifest.json")).productRoots, ["backend/", "tools/"]);
+    assert.equal(scripts["setup:frontend"], "npm --prefix frontend ci --no-audit --no-fund");
+    for (const layer of ["typecheck", "test", "build"]) {
+      assert.match(scripts[layer], new RegExp(`&& npm --prefix frontend run ${layer}$`), layer);
+    }
+    assert.equal(scripts["create-app"], undefined);
+    assert.deepEqual(JSON.parse(read(target, ".harness/manifest.json")).productRoots, ["backend/", "frontend/", "tools/"]);
     const ruleIds = JSON.parse(read(target, ".harness/arch-rules.json")).rules.map((rule) => rule.id);
     assert.ok(ruleIds.length > 0 && ruleIds.every((id) => /^arch-0\d\d$/.test(id)), ruleIds.join(","));
     const ci = read(target, ".github/workflows/ci.yml");
     assert.equal(ci.match(/actions\/setup-python/g)?.length, 1);
-    assert.match(ci, /run: npm run setup:python/);
+    assert.match(ci, /run: npm run setup:python\n\n.*\n        run: npm run setup:frontend/);
     const devcontainer = JSON.parse(read(target, ".devcontainer/devcontainer.json"));
     assert.equal(devcontainer.name, "ai-demo-notes");
     assert.ok("ghcr.io/devcontainers/features/python:1" in devcontainer.features);
-    assert.match(read(target, ".devcontainer/post-create.sh"), /node tools\/py\.mjs setup\n\n\.\/init\.sh/);
+    assert.match(read(target, ".devcontainer/post-create.sh"), /node tools\/py\.mjs setup\nnpm run setup:frontend\n\n\.\/init\.sh/);
     assert.ok(existsSync(path.join(target, ".mcp.json")));
     assert.match(read(target, ".gitignore"), /^backend\/evals\/results\/$/m);
+    assert.match(read(target, ".gitignore"), /^frontend\/dist\/$/m);
+
+    // The frontend comes along without its installed or built files, renamed after the project.
+    assert.ok(existsSync(path.join(target, "frontend/src/App.tsx")));
+    for (const file of filesUnder(path.join(target, "frontend"))) {
+      assert.doesNotMatch(file, /node_modules|[\\/]dist[\\/]|\.tsbuildinfo$/);
+    }
+    assert.equal(JSON.parse(read(target, "frontend/package.json")).name, "ai-demo-notes-ui");
+    const lock = JSON.parse(read(target, "frontend/package-lock.json"));
+    assert.equal(lock.name, "ai-demo-notes-ui");
+    assert.equal(lock.packages[""].name, "ai-demo-notes-ui");
+    assert.match(read(target, "frontend/index.html"), /<title>ai-demo-notes<\/title>/);
+    assert.match(read(target, "frontend/src/api.ts"), /backend\/src\/ai_demo_notes\/main\.py/);
   } finally {
     rmSync(path.dirname(target), { recursive: true, force: true });
   }

@@ -3,8 +3,8 @@
     {
       "id": "feat-001",
       "name": "Example use case from the chassis",
-      "behavior": "backend/ runs the ai-app-chassis example: POST /summarize with guardrails, PII redaction, a versioned prompt and structured output, GET /usage and GET /health, on the fake model by default.",
-      "verification": "npm run check passes, including the coverage and eval-summarize quality gates.",
+      "behavior": "backend/ runs the ai-app-chassis example: POST /summarize with guardrails, PII redaction, a versioned prompt and structured output, GET /usage and GET /health, on the fake model by default; frontend/ is a React UI for it (summary, keywords, guardrail errors, usage totals).",
+      "verification": "npm run check passes: backend and frontend tests, the frontend build, and the coverage and eval-summarize quality gates.",
       "dependencies": [],
       "layers": [
         { "label": "Layer 1: Static checks", "cmd": "npm run lint", "repair": "Fix ruff/format or harness lint errors and rerun the layer command." },

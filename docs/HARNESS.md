@@ -42,4 +42,5 @@
 | — | `npm run create-app` |
 | — | `npm run harness-docs` |
 | — | `npm run setup:python` |
+| — | `npm run setup:frontend` |
 | — | `npm run prepublishOnly` |
