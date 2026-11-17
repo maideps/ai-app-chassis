@@ -140,8 +140,8 @@
     {
       "id": "feat-005",
       "name": "Optional RAG module",
-      "behavior": "core gains an optional retrieval module (embeddings port, chunking, a vector store port with an in-memory implementation) and a retrieval eval metric.",
-      "verification": "TODO: retrieval tests and a recall@k eval gate.",
+      "behavior": "core gains ai_app_chassis.rag: paragraph-aware chunking with overlapping windows, an Embedder and a VectorStore port, a deterministic HashingEmbedder (pure Python, no key), an optional LiteLLMEmbedder, an in-memory cosine store, a Retriever (chunks or distinct documents), recall@k and reciprocal rank; python -m ai_app_chassis.rag_eval scores retrieval of a folder of documents against a golden set and writes a report a quality gate reads.",
+      "verification": "core/tests/test_rag.py and test_rag_eval.py cover chunking, the embedder, the store, the retriever, the metrics and the CLI; the eval-retrieval gate keeps recall@3 on core/evals/retrieval/ at or above 0.9; coverage stays above 90; create-app drops chassis-only scripts.",
       "dependencies": [
         "feat-001"
       ],

@@ -97,3 +97,21 @@ This file records significant architectural decisions, their context, alternativ
 - Negative: two package managers per app (pip and npm), and the e2e check now also runs `npm ci` (network).
 
 The same session fixed a bug the UI exposed: the 422 detail's `message` repeated the rule (`str(exc)` is `"<rule>: <detail>"`). `GuardrailViolation` now keeps `detail`, and the backend sends it alone.
+
+### D-006: The RAG module is pure Python behind two ports, with a hashing embedder as its stand-in
+
+**Date:** 2026-11-17
+**Status:** accepted
+**Context:** feat-005 adds optional retrieval to the core. D-002 keeps the core's only dependency at pydantic, and the summarize eval already shows the value of a deterministic stand-in (the fake model): tests and evals that need no key. ai-issue-triage uses local sentence-transformers embeddings and pgvector, which are too heavy to impose on every app.
+**Decision:**
+- `ai_app_chassis.rag` defines two ports, `Embedder.embed(texts)` and `VectorStore.add/search`, and ships pure-Python implementations: `HashingEmbedder` (words hashed with crc32 into 1024 buckets, 1 + log tf, L2-normalized: deterministic across processes, unlike `hash()`), `InMemoryVectorStore` (brute-force cosine, stable ordering) and `Retriever`. Real embeddings come from `LiteLLMEmbedder` (the existing `litellm` extra, imported lazily). A database store is the app's job, behind the same port.
+- `chunk_text` packs blank-line paragraphs up to `max_chars` and cuts longer paragraphs into windows that overlap by `overlap` characters.
+- `python -m ai_app_chassis.rag_eval` scores recall@k (and reports MRR) of a folder of documents against a JSONL golden set, using the same `run_eval`/`EvalReport` as the summarize eval. A third quality gate, `eval-retrieval`, keeps recall@3 on `core/evals/retrieval/` (6 documents, 12 user-style questions written before the first run) at or above 0.9. The golden set was not adjusted after the first run, which scored recall@3 1.0, recall@1 0.917 and MRR 0.944: the one rank-1 miss ("money back" against a document that says "refunds") is the hashing embedder's known limit and stays visible.
+- `create-app` now drops any chassis script whose command names `core/` or `template/`, so chassis-only evals never reach a new app.
+**Alternatives considered:**
+- numpy for the vector math — rejected: a heavy dependency for a scan that is fast enough at the template's scale.
+- sentence-transformers as the default embedder — rejected: hundreds of MB and a model download for every app and every CI run.
+- Wiring a `/ask` RAG endpoint into the template — rejected for now: every generated app would carry it; the module is optional, and the README shows how to use it.
+**Consequences:**
+- Positive: retrieval code and its eval run anywhere with no key; a real embedder or store plugs in without touching callers.
+- Negative: the hashing embedder matches words, not meaning, so its scores say nothing about a real embedding model; the in-memory store is O(n) per query.

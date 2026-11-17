@@ -17,4 +17,5 @@ ai-app-chassis is the runtime starting point for LLM-backed apps: a Python core 
 ## Out of Scope (for now)
 
 - Publishing the core to PyPI.
-- A RAG module and a real-model eval baseline (planned features).
+- A real-model eval baseline (planned feature).
+- A database-backed vector store: the `VectorStore` port is there, the implementation belongs to the app.
