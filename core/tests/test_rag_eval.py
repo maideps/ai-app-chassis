@@ -41,9 +41,9 @@ def test_main_writes_a_report_with_recall_and_mrr(tmp_path, capsys):
     out = tmp_path / "results" / "retrieval.json"
     assert main(["--docs", str(docs), "--golden", str(golden), "--out", str(out), "--k", "2"]) == 0
     data = json.loads(out.read_text("utf-8"))
-    assert (data["k"], data["embedder"], data["cases"]) == (2, "hashing", 3)
+    assert data["cases"] == 3
+    assert data["metadata"] == {"k": 2, "embedder": "hashing", "mrr": round(2 / 3, 4)}
     assert data["score"] == round(2 / 3, 4)
-    assert data["mrr"] == round(2 / 3, 4)
     assert "recall@2" in capsys.readouterr().out
 
 

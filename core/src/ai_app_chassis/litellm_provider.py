@@ -12,7 +12,7 @@ class LiteLLMProvider:
     def __init__(self, **defaults: Any) -> None:
         try:
             import litellm
-        except ImportError as exc:  # pragma: no cover - depends on the optional extra
+        except ImportError as exc:
             raise RuntimeError(
                 "LiteLLMProvider needs the litellm extra: pip install 'ai-app-chassis[litellm]'"
             ) from exc
@@ -26,7 +26,7 @@ class LiteLLMProvider:
         model: str,
         response_schema: dict[str, Any] | None = None,
         temperature: float = 0.0,
-    ) -> Completion:  # pragma: no cover - needs a real model and key
+    ) -> Completion:
         kwargs: dict[str, Any] = {**self._defaults, "temperature": temperature}
         if response_schema is not None:
             kwargs["response_format"] = {

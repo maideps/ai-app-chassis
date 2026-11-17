@@ -29,7 +29,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 export const CHASSIS_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const REPOSITORY = "https://github.com/maideps/ai-app-chassis.git";
-const SKIPPED = new Set(["__pycache__", ".mypy_cache", ".ruff_cache", ".pytest_cache", "results", "node_modules", "dist"]);
+const SKIPPED = new Set(["__pycache__", ".mypy_cache", ".ruff_cache", ".pytest_cache", "results", "baselines", "node_modules", "dist"]);
 const PY_KEYWORDS = new Set(["and", "as", "class", "def", "del", "for", "from", "global", "import", "in", "is", "lambda", "not", "or", "pass", "return", "try", "while", "with", "yield"]);
 
 export function packageName(name) {
@@ -152,7 +152,7 @@ function wireScripts(target, pythonPackage) {
   // anything that names the chassis's core/ or template/ has nothing to run in a new app.
   const ordered = {};
   for (const [key, value] of Object.entries(scripts)) {
-    if (["setup:python", "setup:frontend", "eval", "create-app"].includes(key)) continue;
+    if (["setup:python", "setup:frontend", "eval", "create-app", "eval:baseline"].includes(key)) continue;
     if (/(^|\s)(core|template)\//.test(value)) continue;
     ordered[key] = value;
     if (key === "setup") {

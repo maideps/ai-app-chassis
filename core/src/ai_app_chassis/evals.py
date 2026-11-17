@@ -27,6 +27,8 @@ class CaseResult:
 class EvalReport:
     name: str
     results: list[CaseResult] = field(default_factory=list)
+    # Context that makes a score comparable later: the model, its token and cost totals, k.
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def score(self) -> float:
@@ -41,6 +43,7 @@ class EvalReport:
             "cases": len(self.results),
             "errors": sum(1 for r in self.results if r.error),
             "score": self.score,
+            "metadata": self.metadata,
             "results": [{**asdict(r), "output": _jsonable(r.output)} for r in self.results],
         }
 

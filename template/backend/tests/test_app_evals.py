@@ -25,4 +25,16 @@ def test_eval_writes_a_report_the_quality_gate_can_read(tmp_path, monkeypatch, c
     assert data["errors"] == 0
     assert 0.0 <= data["score"] <= 1.0
     assert isinstance(data["results"][0]["output"]["keywords"], list)
+    assert data["metadata"]["model"] == "fake/summarize"
+    assert data["metadata"]["usage"]["calls"] == 5
+    assert data["metadata"]["usage"]["cost_usd"] == 0.0
     assert "summarize: score" in capsys.readouterr().out
+
+
+def test_eval_records_the_model_of_the_summarize_step(tmp_path, monkeypatch):
+    monkeypatch.setenv("APP_SUMMARIZE_MODEL", "fake/summarize")
+    monkeypatch.setenv("APP_MODEL", "fake/other")
+    monkeypatch.setattr(evals, "REPORT", tmp_path / "summarize.json")
+    evals.main()
+    data = json.loads((tmp_path / "summarize.json").read_text("utf-8"))
+    assert data["metadata"]["model"] == "fake/summarize"

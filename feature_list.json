@@ -175,11 +175,47 @@
     },
     {
       "id": "feat-006",
-      "name": "Real-model eval baseline",
-      "behavior": "The summarize eval runs against at least one real model through LiteLLM, and the README reports that score next to the fake-model score.",
-      "verification": "TODO: a committed eval report from a real model; needs an API key.",
+      "name": "Real-model eval tooling",
+      "behavior": "Both evals can run against real models and leave a committed baseline: npm run eval:baseline -- --chat-model <litellm model> [--embedding-model <litellm model>] runs the summarize eval with APP_MODEL and the retrieval eval with a LiteLLM embedder, refuses to save a run where any case errored, and writes baselines (model, date, commit, score, tokens, cost, latency) next to each eval. LiteLLMProvider and LiteLLMEmbedder are tested against a simulated litellm module.",
+      "verification": "Tests run the LiteLLM provider, embedder and app wiring against a simulated litellm module; the baseline runner is tested end to end with the stand-ins (fake/summarize, hashing) and for its refusal when a case errors or litellm is missing; npm run check passes.",
       "dependencies": [
         "feat-002"
+      ],
+      "layers": [
+        {
+          "label": "Layer 1: Static checks",
+          "cmd": "npm run lint",
+          "repair": "Fix ruff/format or harness lint errors and rerun the layer command."
+        },
+        {
+          "label": "Layer 1b: Type checks",
+          "cmd": "npm run typecheck",
+          "repair": "Fix mypy errors in core/src or template/backend/src and rerun."
+        },
+        {
+          "label": "Layer 2: Runtime tests",
+          "cmd": "npm run test",
+          "repair": "Fix failing pytest or harness tests and rerun the layer command."
+        },
+        {
+          "label": "Layer 3: System confirmation",
+          "cmd": "npm run check",
+          "repair": "Resolve remaining issues and rerun full verification."
+        },
+        {
+          "label": "Layer 4: Quality gates",
+          "cmd": "npm run quality",
+          "repair": "Raise coverage or the eval score back above the floor in .harness/quality.json, or record why a floor changed in DECISIONS.md."
+        }
+      ]
+    },
+    {
+      "id": "feat-007",
+      "name": "Real-model eval baseline",
+      "behavior": "Committed baselines for at least one real chat model (summarize) and, where the provider has one, a real embedding model (retrieval), produced with npm run eval:baseline, and the README reports them next to the stand-in scores.",
+      "verification": "Baseline JSON files under template/backend/evals/baselines/ and core/evals/retrieval/baselines/ with zero errored cases; README table updated. Needs an API key set by the user.",
+      "dependencies": [
+        "feat-006"
       ],
       "layers": [
         {

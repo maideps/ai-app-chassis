@@ -9,14 +9,14 @@ Rate each module on a scale of A (excellent) / B (good) / C (acceptable) / D (ne
 | core: llm, fake, client | A | A | B | A | B |
 | core: prompts, guardrails, evals | A | A | B | A | B |
 | core: rag, rag_eval | A | A | B | A | C |
-| core: litellm_provider | D | B | B | A | n/a |
+| core: litellm_provider | B | A | B | A | n/a |
 | template/backend app | A | A | B | A | B |
 
 ## Summary
 
 - **Overall Quality Grade:** B
 - **Blockers:** none
-- **Areas requiring attention:** `litellm_provider` and `LiteLLMEmbedder` have never run against a real model; the eval scores only reflect the fake summarizer and the lexical hashing embedder; `InMemoryVectorStore` is a brute-force scan (performance C beyond a few thousand chunks).
+- **Areas requiring attention:** `litellm_provider` and `LiteLLMEmbedder` are tested against a simulated litellm module but have never run against a real model; the eval scores only reflect the fake summarizer and the lexical hashing embedder; `InMemoryVectorStore` is a brute-force scan (performance C beyond a few thousand chunks).
 
 ## Notes
 

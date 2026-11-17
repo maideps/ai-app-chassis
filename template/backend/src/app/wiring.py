@@ -10,7 +10,7 @@ def build_client(settings: Settings) -> LLMClient:
     provider: LLMProvider
     if settings.uses_fake:
         provider = FakeLLMProvider({"summarize": fake_summarize})
-    else:  # pragma: no cover - needs the litellm extra and a key
+    else:
         from ai_app_chassis.litellm_provider import LiteLLMProvider
 
         provider = LiteLLMProvider()
