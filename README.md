@@ -45,7 +45,7 @@ cd template/backend
 npm --prefix template/frontend run dev    # the UI calls /api/*; Vite forwards it to the API on port 8000
 ```
 
-Use a real model by setting `APP_MODEL` (for example `openai/gpt-4o-mini`) and its provider key, after `pip install -e './core[litellm]'`. `APP_SUMMARIZE_MODEL` overrides the model for the summarize step only.
+Use a real model by setting `APP_MODEL` to a LiteLLM model name and the provider's key, after `npm run setup:litellm`. `APP_SUMMARIZE_MODEL` overrides the model for the summarize step only.
 
 ## Quality gates
 
@@ -59,7 +59,19 @@ Use a real model by setting `APP_MODEL` (for example `openai/gpt-4o-mini`) and i
 
 The eval score is 1.0 because the fake summarizer is deterministic and the golden set was written against it: it proves the eval pipeline, not model quality. Rerun `npm run eval` with a real `APP_MODEL` for a meaningful number.
 
-The retrieval numbers come from the hashing embedder, which matches words, not meaning: its one miss at rank 1 is "do I get money back if I remove seats", whose answer says "refunds". `npm run eval:retrieval` runs the same eval; pass `--embedder litellm:<model>` to `python -m ai_app_chassis.rag_eval` to measure a real embedding model on the same questions.
+The retrieval numbers come from the hashing embedder, which matches words, not meaning: its one miss at rank 1 is "do I get money back if I remove seats", whose answer says "refunds". `npm run eval:retrieval` runs the same eval.
+
+### Measuring real models
+
+No real-model score has been recorded yet (feat-007). When a provider key is available:
+
+```bash
+npm run setup:litellm                       # once: installs litellm into .venv
+export OPENAI_API_KEY=...                   # or ANTHROPIC_API_KEY, GEMINI_API_KEY, ...
+npm run eval:baseline -- --chat-model <litellm chat model> --embedding-model <litellm embedding model>
+```
+
+The runner runs the summarize eval with that chat model and, when an embedding model is given, the retrieval eval with it. It saves each report as a baseline next to its eval (`template/backend/evals/baselines/`, `core/evals/retrieval/baselines/`) with the model, date, commit, score, tokens and cost, and prints a table row for this README. A run in which any case errored, for example because the key is missing, is refused instead of saved as a score of 0. `--chat-model fake/summarize --embedding-model hashing` is a free dry run of the same path.
 
 ## Starting a new app from the template
 
@@ -72,7 +84,7 @@ cd ../ai-new-app && npm run setup:python && npm run setup:frontend && npm run ch
 
 Then replace the example: a Pydantic output model, a prompt folder and a fake handler for the real use case, its screen in `frontend/src/App.tsx`, and golden cases for its eval gate.
 
-A real-model eval baseline is planned (see `feature_list.json`).
+Committed real-model baselines are planned (feat-007, see `feature_list.json`).
 
 ### Using the retrieval module
 

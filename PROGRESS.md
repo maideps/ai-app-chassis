@@ -11,10 +11,10 @@ After adding or updating a session note, regenerate this file with `node scripts
 - Primary startup command: `./init.sh`
 - Primary verification command: `make check` (make-free equivalent: `npm run check`)
 - Active feature: none
-- Passing features (5): feat-001 — Core library, feat-002 — Example app template, feat-003 — create-app generator, feat-004 — Frontend in the template, feat-005 — Optional RAG module
+- Passing features (6): feat-001 — Core library, feat-002 — Example app template, feat-003 — create-app generator, feat-004 — Frontend in the template, feat-005 — Optional RAG module, feat-006 — Real-model eval tooling
 - Failing/blocked features: none
-- Planned features (1): feat-006 — Real-model eval baseline
-- Last evidence: feat-005 — Optional RAG module — All verification layers passed via node scripts/framework-check.mjs verify-feature (SKIP reported in: Layer 2: Runtime tests, Layer 3: System confirmation) (2026-11-17T19:11:20.721Z)
+- Planned features (1): feat-007 — Real-model eval baseline
+- Last evidence: feat-006 — Real-model eval tooling — All verification layers passed via node scripts/framework-check.mjs verify-feature (SKIP reported in: Layer 2: Runtime tests, Layer 3: System confirmation) (2026-11-17T20:01:44.587Z)
 
 ## Session Index
 
@@ -23,4 +23,5 @@ After adding or updating a session note, regenerate this file with `node scripts
 - [Session 003 — 2026-11-03 — feat-003 create-app generator](progress/003-2026-11-03.md)
 - [Session 004 — 2026-11-17 — feat-004 Frontend in the template](progress/004-2026-11-17.md)
 - [Session 005 — 2026-11-17 — feat-005 Optional RAG module](progress/005-2026-11-17.md)
+- [Session 006 — 2026-11-17 — feat-006 Real-model eval tooling (feat-007 split off)](progress/006-2026-11-17.md)
 <!-- END GENERATED PROGRESS -->

@@ -32,6 +32,10 @@ def main() -> None:
         lambda inp: summarize(client, inp["text"]),
         scorer=keyword_recall,
     )
+    # The model and what its calls cost make a score comparable with a later run.
+    report.metadata.update(
+        model=client.router.model_for("summarize"), usage=client.ledger.summary()["total"]
+    )
     report.write(REPORT)
     print(f"summarize: score {report.score} over {len(report.results)} cases -> {REPORT}")
 

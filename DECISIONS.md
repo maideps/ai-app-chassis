@@ -115,3 +115,21 @@ The same session fixed a bug the UI exposed: the 422 detail's `message` repeated
 **Consequences:**
 - Positive: retrieval code and its eval run anywhere with no key; a real embedder or store plugs in without touching callers.
 - Negative: the hashing embedder matches words, not meaning, so its scores say nothing about a real embedding model; the in-memory store is O(n) per query.
+
+### D-007: Real-model baselines are refused when any case errored, and come from one runner
+
+**Date:** 2026-11-17
+**Status:** accepted
+**Context:** feat-006 asked for a real-model eval, but no provider key is configured and the maintainer chose to prepare the tooling now and run it later. The risky part of a real run is not the model call but the bookkeeping: `run_eval` turns an exception into a case scored 0, so a missing key or a typo in the model name would produce a report that looks like a measured score of 0. `LiteLLMProvider` and `LiteLLMEmbedder` had no tests at all.
+**Decision:**
+- feat-006 is split: feat-006 (tooling, done now) and feat-007 (committed real-model baselines, needs a key).
+- `npm run eval:baseline -- --chat-model <m> [--embedding-model <m>]` (`tools/eval-baseline.mjs`) runs the summarize eval with `APP_MODEL=<m>` (clearing `APP_SUMMARIZE_MODEL`, so the recorded model is the one used) and the retrieval eval with `--embedder litellm:<m>`, refuses to save a report with any errored case, and writes baselines with model, date and commit next to each eval. `fake/summarize` and `hashing` make it a free dry run, which is how its tests run it; the tests strip every `*_API_KEY` variable so they can never spend money.
+- `EvalReport` gains `metadata`; the summarize eval records the summarize step's model and the ledger totals (tokens, cost, latency), and `rag_eval` records k, the embedder and MRR there.
+- The LiteLLM adapters are tested against a simulated `litellm` module (request shape, structured-output `response_format`, usage, cost, a cost missing from LiteLLM's price map, both embedding response shapes, a missing install), and their `pragma: no cover` markers are gone.
+- `npm run setup:litellm` installs `litellm` itself rather than the core's extra, so the same script works in generated apps; `create-app` drops `eval:baseline`, skips `baselines/` folders, and its test now checks that every `node <file>` script of a generated app names a file the app has.
+**Alternatives considered:**
+- Make `run_eval` re-raise on the first exception — rejected: for the quality gates, one broken case should lower the score, not hide the others.
+- Record an unknown cost as null — rejected for now: `Usage.cost_usd` is a float everywhere; the runner warns when a real model reports $0 instead.
+**Consequences:**
+- Positive: when a key exists, one command produces comparable, committed numbers; the adapters' request and response handling is checked on every run.
+- Negative: the simulated module checks our side of the contract, not LiteLLM's; only feat-007 proves a real provider call.

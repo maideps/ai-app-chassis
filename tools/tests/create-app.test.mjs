@@ -79,6 +79,13 @@ test("createApp renames the template package and wires the project around it", (
       assert.match(scripts[layer], new RegExp(`&& npm --prefix frontend run ${layer}$`), layer);
     }
     assert.equal(scripts["create-app"], undefined);
+    // Every script that runs a file runs one the new app has: chassis-only tools never leak.
+    for (const [key, command] of Object.entries(scripts)) {
+      for (const [, file] of command.matchAll(/\bnode (\S+\.mjs)/g)) {
+        assert.ok(existsSync(path.join(target, file)), `script ${key} runs missing ${file}`);
+      }
+    }
+    assert.equal(scripts["setup:litellm"], 'node tools/py.mjs -m pip install --quiet "litellm>=1.40"');
     assert.deepEqual(JSON.parse(read(target, ".harness/manifest.json")).productRoots, ["backend/", "frontend/", "tools/"]);
     const ruleIds = JSON.parse(read(target, ".harness/arch-rules.json")).rules.map((rule) => rule.id);
     assert.ok(ruleIds.length > 0 && ruleIds.every((id) => /^arch-0\d\d$/.test(id)), ruleIds.join(","));

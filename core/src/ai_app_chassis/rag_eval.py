@@ -5,15 +5,13 @@
 
 Each document is a ``.md`` or ``.txt`` file whose name (without extension) is its id. Each
 golden line is ``{"id", "input": {"query"}, "expected": {"relevant": [doc ids]}}``. The
-report's ``score`` is the mean recall@k, which a harness quality gate reads; ``mrr`` is added
-next to it.
+report's ``score`` is the mean recall@k, which a harness quality gate reads; its ``metadata``
+carries k, the embedder and the MRR.
 """
 
 import argparse
-import json
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any
 
 from ai_app_chassis.evals import EvalReport, load_cases, run_eval
 from ai_app_chassis.rag import (
@@ -34,7 +32,7 @@ def load_documents(folder: Path | str) -> dict[str, str]:
 def build_embedder(spec: str) -> Embedder:
     if spec == "hashing":
         return HashingEmbedder()
-    if spec.startswith("litellm:"):  # pragma: no cover - needs the extra and a key
+    if spec.startswith("litellm:"):
         return LiteLLMEmbedder(spec.split(":", 1)[1])
     raise ValueError(f"unknown embedder {spec!r}: use 'hashing' or 'litellm:<model>'")
 
@@ -65,16 +63,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     report = evaluate(
         load_documents(args.docs), args.golden, embedder=build_embedder(args.embedder), k=args.k
     )
-    data: dict[str, Any] = report.to_dict()
     expected = {case.id: case.expected["relevant"] for case in golden}
     ranks = [reciprocal_rank(r.output or [], expected[r.id]) for r in report.results]
-    data.update(k=args.k, embedder=args.embedder, mrr=round(sum(ranks) / max(len(ranks), 1), 4))
-    out = Path(args.out)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
-    print(
-        f"retrieval: recall@{args.k} {report.score}, mrr {data['mrr']} over {len(golden)} queries"
-    )
+    mrr = round(sum(ranks) / max(len(ranks), 1), 4)
+    report.metadata.update(k=args.k, embedder=args.embedder, mrr=mrr)
+    report.write(args.out)
+    print(f"retrieval: recall@{args.k} {report.score}, mrr {mrr} over {len(golden)} queries")
     return 0
 
 

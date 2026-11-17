@@ -112,7 +112,7 @@ class LiteLLMEmbedder:
     def __init__(self, model: str, **defaults: Any) -> None:
         try:
             import litellm
-        except ImportError as exc:  # pragma: no cover - depends on the optional extra
+        except ImportError as exc:
             raise RuntimeError(
                 "LiteLLMEmbedder needs the litellm extra: pip install 'ai-app-chassis[litellm]'"
             ) from exc
@@ -120,9 +120,11 @@ class LiteLLMEmbedder:
         self.model = model
         self._defaults = defaults
 
-    def embed(self, texts: Sequence[str]) -> list[Vector]:  # pragma: no cover - needs a key
+    def embed(self, texts: Sequence[str]) -> list[Vector]:
         response = self._litellm.embedding(model=self.model, input=list(texts), **self._defaults)
-        return [_normalize([float(x) for x in item["embedding"]]) for item in response.data]
+        # LiteLLM returns plain dicts for some providers and Embedding objects for others.
+        vectors = [i["embedding"] if isinstance(i, dict) else i.embedding for i in response.data]
+        return [_normalize([float(x) for x in vector]) for vector in vectors]
 
 
 class InMemoryVectorStore:

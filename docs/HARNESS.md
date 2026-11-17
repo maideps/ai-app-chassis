@@ -40,8 +40,10 @@
 | `make help` | `npm run help` |
 | — | `npm run eval` |
 | — | `npm run eval:retrieval` |
+| — | `npm run eval:baseline` |
 | — | `npm run create-app` |
 | — | `npm run harness-docs` |
 | — | `npm run setup:python` |
 | — | `npm run setup:frontend` |
+| — | `npm run setup:litellm` |
 | — | `npm run prepublishOnly` |
