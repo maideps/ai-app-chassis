@@ -17,5 +17,6 @@ bash .devcontainer/register-mcp.sh
 
 # The Python layers run from .venv (core and template/backend, editable).
 node tools/py.mjs setup
+npm run setup:frontend
 
 ./init.sh || echo "post-create: ./init.sh reported problems — run it again once you have read its output."

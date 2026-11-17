@@ -20,6 +20,8 @@ def test_check_input_rejects(text, rule):
     with pytest.raises(GuardrailViolation) as caught:
         check_input(text, InputPolicy(max_chars=10 if rule == "too_long" else 8000))
     assert caught.value.rule == rule
+    assert str(caught.value) == f"{rule}: {caught.value.detail}"
+    assert not caught.value.detail.startswith(rule)
 
 
 def test_injection_check_can_be_turned_off():

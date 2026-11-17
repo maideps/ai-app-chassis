@@ -31,7 +31,7 @@ def create_app(settings: Settings | None = None, client: LLMClient | None = None
         try:
             return summarize(llm, request.text, policy=policy)
         except GuardrailViolation as exc:
-            violation = {"rule": exc.rule, "message": str(exc)}
+            violation = {"rule": exc.rule, "message": exc.detail}
             raise HTTPException(status_code=422, detail=violation) from exc
         except StructuredOutputError as exc:
             message = "the model did not return a valid summary"

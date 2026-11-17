@@ -79,3 +79,21 @@ This file records significant architectural decisions, their context, alternativ
 **Consequences:**
 - Positive: a new app is one command away and is verified the same way as this repository.
 - Negative: generating from an unpushed commit gives an app whose pin cannot be installed yet (create-app warns); the e2e check needs network for PyPI and adds about two minutes to `npm run check`.
+
+### D-005: The template frontend is React + Vite behind an /api proxy
+
+**Date:** 2026-11-17
+**Status:** accepted
+**Context:** feat-004 adds a UI to the template. Every app made with `create-app` copies it, so it should be small, typed and tested, and should not force a deployment shape on the backend.
+**Decision:**
+- React 19, Vite 6, TypeScript 5.8 (strict), Vitest 3 with Testing Library and jsdom: the same stack and versions as ai-issue-triage's UI, which already works in this portfolio. No CSS framework and no linter beyond `tsc`, as there.
+- The UI calls `/api/*`. The Vite dev server rewrites it to the backend's root routes (`API_URL`, default `http://localhost:8000`); in production a reverse proxy does the same. The backend therefore needs no CORS configuration and keeps its routes unprefixed.
+- The frontend's `typecheck`, `test` and `build` run inside the chassis's own layers (`npm --prefix template/frontend run …`), installed with `npm run setup:frontend` (`npm ci` on the committed lockfile). `create-app` copies it to `frontend/` without `node_modules`, `dist` or build info, and renames its package to `<name>-ui`.
+**Alternatives considered:**
+- Serve the built UI from FastAPI — rejected: it ties the backend to static files and a build step.
+- Enable CORS in the backend — rejected: it is configuration every app would have to get right; a same-origin proxy has none.
+**Consequences:**
+- Positive: a generated app has a working UI from the first commit, verified in its own `npm run check`.
+- Negative: two package managers per app (pip and npm), and the e2e check now also runs `npm ci` (network).
+
+The same session fixed a bug the UI exposed: the 422 detail's `message` repeated the rule (`str(exc)` is `"<rule>: <detail>"`). `GuardrailViolation` now keeps `detail`, and the backend sends it alone.

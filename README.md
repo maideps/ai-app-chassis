@@ -20,6 +20,7 @@ See the [Harness Command Reference](docs/HARNESS.md) for every make target and n
 | Guardrails | `guardrails.py` | Input length, prompt-injection phrases, e-mail and phone redaction, all before the model is called |
 | Evals | `evals.py` | Golden-set runner with custom scorers and a JSON report whose `score` a quality gate reads |
 | App template | `template/backend/` | FastAPI service with `/summarize`, `/usage` and `/health`, its prompt, its fake handler, a five-case golden set and tests |
+| App frontend | `template/frontend/` | React + Vite UI for the template: summarize a text, see the keywords, the guardrail that rejected an input, and the usage totals; tested with Vitest and Testing Library |
 
 ## Run it in five minutes
 
@@ -27,16 +28,20 @@ Needs Node 18+ and Python 3.11+.
 
 ```bash
 npm run setup:python      # creates .venv and installs core/ and template/backend/ in editable mode
+npm run setup:frontend    # installs template/frontend/ dependencies
 npm run check             # lint, types, tests, build, then the quality gates
 npm run eval              # golden-set eval of the template, report in template/backend/evals/results/
 ```
 
-Run the API on the fake model:
+Run the app on the fake model, the API in one terminal and the UI in another, then open http://localhost:4173:
 
 ```bash
 cd template/backend
 ../../.venv/Scripts/python -m uvicorn app.main:app --reload    # .venv/bin/python on macOS and Linux
-curl -X POST localhost:8000/summarize -H "content-type: application/json" -d '{"text": "Offline sync ships today. Sync keeps drafts on the device."}'
+```
+
+```bash
+npm --prefix template/frontend run dev    # the UI calls /api/*; Vite forwards it to the API on port 8000
 ```
 
 Use a real model by setting `APP_MODEL` (for example `openai/gpt-4o-mini`) and its provider key, after `pip install -e './core[litellm]'`. `APP_SUMMARIZE_MODEL` overrides the model for the summarize step only.
@@ -56,14 +61,14 @@ The eval score is 1.0 because the fake summarizer is deterministic and the golde
 
 ```bash
 npm run create-app -- ../ai-new-app                   # or: node tools/create-app.mjs <dir> --name <kebab-name>
-cd ../ai-new-app && npm run setup:python && npm run check
+cd ../ai-new-app && npm run setup:python && npm run setup:frontend && npm run check
 ```
 
-`create-app` adopts the harness into the new directory (with the dev container and the context7 MCP server; `--plain` skips both), copies `template/backend/` to `backend/` with the `app` package renamed after the project (`ai_new_app`), and writes the root files from `template/scaffold/`: README, product and quality docs, a feature list, the Python launcher and the quality gates. The npm scripts, the CI workflow and the dev container are wired for Python. The new app installs the core from this repository on GitHub, pinned to the current commit, so push before generating; `--core-path <dir>` points at a local `core/` instead.
+`create-app` adopts the harness into the new directory (with the dev container and the context7 MCP server; `--plain` skips both), copies `template/backend/` to `backend/` with the `app` package renamed after the project (`ai_new_app`) and `template/frontend/` to `frontend/`, and writes the root files from `template/scaffold/`: README, product and quality docs, a feature list, the Python launcher and the quality gates. The npm scripts, the CI workflow and the dev container are wired for both. The new app installs the core from this repository on GitHub, pinned to the current commit, so push before generating; `--core-path <dir>` points at a local `core/` instead.
 
-Then replace the example: a Pydantic output model, a prompt folder and a fake handler for the real use case, and golden cases for its eval gate.
+Then replace the example: a Pydantic output model, a prompt folder and a fake handler for the real use case, its screen in `frontend/src/App.tsx`, and golden cases for its eval gate.
 
-A frontend in the template and an optional RAG module are planned (see `feature_list.json`).
+An optional RAG module and a real-model eval baseline are planned (see `feature_list.json`).
 
 ## Stack
 

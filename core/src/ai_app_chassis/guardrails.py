@@ -17,6 +17,7 @@ class GuardrailViolation(ValueError):
     def __init__(self, rule: str, detail: str) -> None:
         super().__init__(f"{rule}: {detail}")
         self.rule = rule
+        self.detail = detail
 
 
 @dataclass(frozen=True)

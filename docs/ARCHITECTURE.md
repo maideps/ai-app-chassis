@@ -2,9 +2,14 @@
 
 ## Layer Model
 
-Two Python packages, one depending on the other:
+A React UI talking HTTP to a FastAPI app, which depends on the core library:
 
 ```
+template/frontend (React + Vite)          the example UI; calls /api/*, which Vite (or a reverse
+  src/api.ts     typed client             proxy) forwards to the backend's routes
+  src/App.tsx    summarize form, result, guardrail errors, usage totals
+        |
+        v  HTTP only, no shared code
 template/backend (package "app")          the example service; copied to start an app
   main.py        HTTP (FastAPI): /summarize, /usage, /health
   summarize.py   use case: guardrails -> prompt -> structured call; its fake handler

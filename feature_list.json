@@ -104,8 +104,8 @@
     {
       "id": "feat-004",
       "name": "Frontend in the template",
-      "behavior": "The template gains a small React + Vite frontend for the summarize use case, with its own lint, typecheck, test and build wired into the layers.",
-      "verification": "TODO: frontend tests and build run in npm run check.",
+      "behavior": "template/frontend is a React + Vite UI for the template backend: a summarize form that shows the summary and keywords, names the guardrail that rejected an input (422) or reports a model failure (502), and shows the model and the usage totals. It calls /api/*, which the Vite dev server forwards to the backend. Its typecheck, tests and build run in the chassis layers, and create-app copies it to frontend/ in every new app.",
+      "verification": "Vitest + Testing Library cover the summarize flow, the guardrail and model errors, the unreachable backend and the API client; npm run typecheck/test/build include the frontend; create-app tests check frontend/ in a generated app, and the e2e check installs it and runs its npm run check.",
       "dependencies": [
         "feat-002"
       ],

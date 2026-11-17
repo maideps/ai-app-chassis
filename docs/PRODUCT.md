@@ -9,7 +9,7 @@ ai-app-chassis is the runtime starting point for LLM-backed apps: a Python core 
 
 ## Key User Flows
 
-- Install and verify: `npm run setup:python`, then `npm run check` (layers plus the coverage and eval gates).
+- Install and verify: `npm run setup:python` and `npm run setup:frontend`, then `npm run check` (layers plus the coverage and eval gates).
 - Build a use case: add a Pydantic output model, a prompt folder and a fake handler, then call `LLMClient.structured` from the app.
 - Change a prompt safely: add `prompts/<name>/v<N+1>/`, run `npm run eval`, compare the score with the previous version.
 - Switch to a real model: set `APP_MODEL` (and optionally per-step models) to a LiteLLM model name.
@@ -17,4 +17,4 @@ ai-app-chassis is the runtime starting point for LLM-backed apps: a Python core 
 ## Out of Scope (for now)
 
 - Publishing the core to PyPI.
-- A frontend, a RAG module and a `create-app` generator (planned features).
+- A RAG module and a real-model eval baseline (planned features).

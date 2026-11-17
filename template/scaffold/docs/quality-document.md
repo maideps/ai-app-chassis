@@ -7,6 +7,7 @@ Rate each module on a scale of A (excellent) / B (good) / C (acceptable) / D (ne
 | Module | Test Coverage | Type Safety | Documentation | Arch Compliance | Performance |
 |---|---|---|---|---|---|
 | backend/{{package}} (example use case) | A | A | B | A | B |
+| frontend (example UI) | B | A | B | A | B |
 
 ## Summary
 
