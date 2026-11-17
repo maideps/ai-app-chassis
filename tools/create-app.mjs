@@ -148,10 +148,12 @@ function wireScripts(target, pythonPackage) {
     build: `node scripts/framework-check.mjs build && ${py} -m compileall -q backend/src && ${fe} build`,
     e2e: "node scripts/framework-check.mjs e2e",
   };
-  // The chassis's own extra scripts are rewritten for backend/ and frontend/, or dropped.
+  // The chassis's own extra scripts are rewritten for backend/ and frontend/, or dropped:
+  // anything that names the chassis's core/ or template/ has nothing to run in a new app.
   const ordered = {};
   for (const [key, value] of Object.entries(scripts)) {
     if (["setup:python", "setup:frontend", "eval", "create-app"].includes(key)) continue;
+    if (/(^|\s)(core|template)\//.test(value)) continue;
     ordered[key] = value;
     if (key === "setup") {
       ordered["setup:python"] = `${py} setup`;

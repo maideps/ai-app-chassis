@@ -26,6 +26,9 @@ core (package "ai_app_chassis")           no web framework, no database, only py
   prompts.py     versioned prompts on disk
   guardrails.py  input checks and PII redaction
   evals.py       golden-set runner and JSON report
+  rag.py         optional retrieval: chunking, Embedder and VectorStore ports, hashing
+                 embedder, in-memory cosine store, Retriever, recall@k, reciprocal rank
+  rag_eval.py    python -m ai_app_chassis.rag_eval: recall@k of a folder of documents
 ```
 
 ## Harness Boundaries

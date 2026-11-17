@@ -19,6 +19,7 @@ See the [Harness Command Reference](docs/HARNESS.md) for every make target and n
 | Prompts | `prompts.py` | Versioned prompts on disk (`prompts/<name>/v<N>/`), `latest` or a pinned version, ids like `summarize/v1` in the ledger |
 | Guardrails | `guardrails.py` | Input length, prompt-injection phrases, e-mail and phone redaction, all before the model is called |
 | Evals | `evals.py` | Golden-set runner with custom scorers and a JSON report whose `score` a quality gate reads |
+| Retrieval (optional) | `rag.py`, `rag_eval.py` | Chunking, an `Embedder` and a `VectorStore` port, a deterministic hashing embedder, an in-memory cosine store, a `Retriever`, recall@k and reciprocal rank, and `python -m ai_app_chassis.rag_eval` to score retrieval on a folder of documents |
 | App template | `template/backend/` | FastAPI service with `/summarize`, `/usage` and `/health`, its prompt, its fake handler, a five-case golden set and tests |
 | App frontend | `template/frontend/` | React + Vite UI for the template: summarize a text, see the keywords, the guardrail that rejected an input, and the usage totals; tested with Vitest and Testing Library |
 
@@ -48,14 +49,17 @@ Use a real model by setting `APP_MODEL` (for example `openai/gpt-4o-mini`) and i
 
 ## Quality gates
 
-`.harness/quality.json` turns two numbers into floors, checked by `npm run quality` and at the end of `npm run check`:
+`.harness/quality.json` turns three numbers into floors, checked by `npm run quality` and at the end of `npm run check`:
 
-| Gate | Floor | Current (fake model) |
+| Gate | Floor | Current (deterministic stand-ins) |
 |---|---|---|
-| Line coverage of `ai_app_chassis` and `app` | 90 | 93.61 |
+| Line coverage of `ai_app_chassis` and `app` | 90 | 94.28 |
 | Golden-set keyword recall of `/summarize` | 0.8 | 1.0 |
+| Retrieval recall@3 on `core/evals/retrieval/` (6 documents, 12 questions) | 0.9 | 1.0 (recall@1 0.92, MRR 0.94) |
 
 The eval score is 1.0 because the fake summarizer is deterministic and the golden set was written against it: it proves the eval pipeline, not model quality. Rerun `npm run eval` with a real `APP_MODEL` for a meaningful number.
+
+The retrieval numbers come from the hashing embedder, which matches words, not meaning: its one miss at rank 1 is "do I get money back if I remove seats", whose answer says "refunds". `npm run eval:retrieval` runs the same eval; pass `--embedder litellm:<model>` to `python -m ai_app_chassis.rag_eval` to measure a real embedding model on the same questions.
 
 ## Starting a new app from the template
 
@@ -68,7 +72,20 @@ cd ../ai-new-app && npm run setup:python && npm run setup:frontend && npm run ch
 
 Then replace the example: a Pydantic output model, a prompt folder and a fake handler for the real use case, its screen in `frontend/src/App.tsx`, and golden cases for its eval gate.
 
-An optional RAG module and a real-model eval baseline are planned (see `feature_list.json`).
+A real-model eval baseline is planned (see `feature_list.json`).
+
+### Using the retrieval module
+
+```python
+from ai_app_chassis import HashingEmbedder, Retriever
+
+retriever = Retriever(HashingEmbedder())          # or LiteLLMEmbedder("openai/text-embedding-3-small")
+retriever.index({"api-tokens": open("docs/api-tokens.md").read(), ...})
+for hit in retriever.retrieve("how long until a token expires", k=3):
+    print(hit.chunk.doc_id, round(hit.score, 2), hit.chunk.text[:80])
+```
+
+Any store with `add(chunks, vectors)` and `search(vector, k)` (pgvector, a hosted index) can replace `InMemoryVectorStore`, and any object with `embed(texts)` can replace the embedder.
 
 ## Stack
 

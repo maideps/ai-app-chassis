@@ -1,0 +1,12 @@
+{"id": "token-expiry", "input": {"query": "how long until an API token expires"}, "expected": {"relevant": ["api-tokens"]}}
+{"id": "token-rotate", "input": {"query": "rotate a token without breaking my integrations"}, "expected": {"relevant": ["api-tokens"]}}
+{"id": "status-429", "input": {"query": "I get 429 Too Many Requests, what should my client do"}, "expected": {"relevant": ["rate-limits"]}}
+{"id": "request-quota", "input": {"query": "how many requests per minute can I send"}, "expected": {"relevant": ["rate-limits"]}}
+{"id": "download-everything", "input": {"query": "download a copy of all my projects and attachments"}, "expected": {"relevant": ["data-export"]}}
+{"id": "export-api", "input": {"query": "start an export through the API and know when it is ready"}, "expected": {"relevant": ["data-export"]}}
+{"id": "webhook-signature", "input": {"query": "verify that a webhook delivery really came from you"}, "expected": {"relevant": ["webhooks"]}}
+{"id": "webhook-retries", "input": {"query": "what happens when my endpoint is down during a webhook delivery"}, "expected": {"relevant": ["webhooks"]}}
+{"id": "invoice-vat", "input": {"query": "change the VAT number on my invoices"}, "expected": {"relevant": ["billing"]}}
+{"id": "seat-refund", "input": {"query": "do I get money back if I remove seats"}, "expected": {"relevant": ["billing"]}}
+{"id": "saml-okta", "input": {"query": "log in with Okta"}, "expected": {"relevant": ["sso"]}}
+{"id": "lost-idp", "input": {"query": "our identity provider is down and nobody can log in"}, "expected": {"relevant": ["sso"]}}

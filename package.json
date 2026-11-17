@@ -32,6 +32,7 @@
     "verify-all": "node scripts/framework-check.mjs verify-all",
     "quality": "node scripts/framework-check.mjs quality",
     "eval": "node tools/py.mjs -m app.evals",
+    "eval:retrieval": "node tools/py.mjs -m ai_app_chassis.rag_eval --docs core/evals/retrieval/docs --golden core/evals/retrieval/golden.jsonl --out core/evals/results/retrieval.json --k 3",
     "create-app": "node tools/create-app.mjs",
     "lane-new": "node scripts/framework-check.mjs lane-new",
     "lane-list": "node scripts/framework-check.mjs lane-list",
